@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Chinho — What Your Browser Gave Away</title>
+<title>চিহ্ন (Chinho) — What Your Browser Gave Away</title>
 <meta name="description" content="What your browser reveals the moment you arrive. No input. No permission. No exception.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,7 +62,7 @@
   /* Intro */
   .intro { text-align: center; padding: 18vh 0 4vh; }
   .series-label {
-    font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.18em;
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--faint); margin-bottom: 2.5rem;
     opacity: 0; animation: appear 1.5s ease forwards 0.5s;
   }
@@ -77,16 +77,40 @@
     margin-top: 2rem; opacity: 0; animation: appear 1.5s ease forwards 2.8s;
   }
 
-  /* Scanning */
+  /* Radar scanning */
   .scanning { text-align: center; padding: 5vh 0 2vh; opacity: 0; animation: appear 0.8s ease forwards 4.2s; }
   .scanning.done { display: none; }
-  .scanning-text { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); }
-  .scanning-fp { width: 64px; height: 64px; margin: 1rem auto 0; color: var(--faint); display: block; }
-  .scanning-fp svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .fp-scan { stroke: var(--dim); animation: fpScan 2.4s ease-in-out infinite; transform-origin: center; }
-  @keyframes fpScan {
-    0%, 100% { transform: translateY(2px); opacity: 0.55; }
-    50%       { transform: translateY(58px); opacity: 1; }
+  .scanning-text {
+    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint);
+  }
+  .radar-container {
+    width: 96px; height: 96px; margin: 1rem auto 0; position: relative;
+  }
+  .radar-circle {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid var(--dim); opacity: 0.4;
+  }
+  .radar-circle:nth-child(1) { transform: scale(0.3); }
+  .radar-circle:nth-child(2) { transform: scale(0.6); }
+  .radar-circle:nth-child(3) { transform: scale(0.9); }
+  .radar-sweep {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0%, rgba(196,168,130,0.3) 30%, rgba(196,168,130,0) 60%);
+    animation: radarRotate 2.4s linear infinite;
+  }
+  @keyframes radarRotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .radar-dot {
+    position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+    background: var(--accent); border-radius: 50%; transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px var(--accent);
+    animation: pulse 1.5s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.8); }
+    50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.2); }
   }
 
   /* Observations */
@@ -249,7 +273,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fp-scan { animation: none; }
+    .radar-sweep { animation: none; }
     .title.flicker { animation: appear 0.6s ease forwards 0.5s; }
     .obs.visible, .divider.visible,
     .closing-tally.visible, .closing-thesis.visible, .closing-behavioral.visible,
@@ -272,8 +296,8 @@
 
 <noscript>
   <div style="max-width:640px;margin:6rem auto;padding:0 1.5rem;font-family:'EB Garamond',Georgia,serif;color:#e8e4df;">
-    <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;color:#6b6560;margin-bottom:2.5rem;">Chinho</div>
-    <h1 style="font-size:4rem;font-weight:400;letter-spacing:-0.02em;color:#e8e4df;margin:0 0 2rem;">Chinho</h1>
+    <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;color:#6b6560;margin-bottom:2.5rem;">চিহ্ন (Chinho)</div>
+    <h1 style="font-size:4rem;font-weight:400;letter-spacing:-0.02em;color:#e8e4df;margin:0 0 2rem;">চিহ্ন</h1>
     <p style="font-size:1.125rem;line-height:1.7;font-style:italic;color:#a09a92;margin-bottom:1.25rem;">This page requires JavaScript. That is part of the point. Your browser is what is being read.</p>
     <p style="font-size:1rem;line-height:1.7;color:#a09a92;">With JavaScript off, the page cannot tell you what your browser disclosed. The data is still there. The disclosure still happened. Only the telling of it stops.</p>
   </div>
@@ -283,27 +307,19 @@
 
 <div class="page">
   <div class="intro">
-    <div class="series-label">Chinho</div>
-    <h1 class="title" id="title">Chinho</h1>
+    <div class="series-label">চিহ্ন (Chinho) — Bengali for "sign / mark"</div>
+    <h1 class="title" id="title">চিহ্ন</h1>
     <p class="intro-line">You opened this page. It already knows the following.</p>
   </div>
 
   <div class="scanning" id="scanning">
     <div class="scanning-text">reading</div>
-    <div class="scanning-fp">
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-        <g stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round">
-          <path d="M 8,42 C 10,22 54,22 56,42"/>
-          <path d="M 12,46 C 14,28 50,28 52,46"/>
-          <path d="M 16,50 C 18,34 46,34 48,50"/>
-          <path d="M 20,54 C 22,40 42,40 44,54"/>
-          <path d="M 26,58 C 27,46 37,46 38,58"/>
-          <path d="M 32,42 L 32,58"/>
-          <path d="M 28,46 L 28,58"/>
-          <path d="M 36,46 L 36,58"/>
-        </g>
-        <line class="fp-scan" x1="6" y1="0" x2="58" y2="0" stroke-width="1"/>
-      </svg>
+    <div class="radar-container">
+      <div class="radar-circle"></div>
+      <div class="radar-circle"></div>
+      <div class="radar-circle"></div>
+      <div class="radar-sweep"></div>
+      <div class="radar-dot"></div>
     </div>
   </div>
 
@@ -362,8 +378,8 @@
     <ul class="source-list">
       <li class="source-item">
         <div class="source-label">Your location</div>
-        <div class="source-cite"><a href="https://ip-api.com" target="_blank" rel="noopener noreferrer">ip-api.com · Free tier · CC-BY-SA</a></div>
-        <div class="source-note">Your IP address arrives in the header of every request your device makes. We pass it to ip-api.com to translate it into a city and ISP name. Neither side stores it. We display only the first and last octet on screen.</div>
+        <div class="source-cite"><a href="https://ipapi.co" target="_blank" rel="noopener noreferrer">ipapi.co · Free tier · CORS-enabled</a></div>
+        <div class="source-note">Your IP address arrives in the header of every request your device makes. We pass it to ipapi.co to translate it into a city and ISP name. Neither side stores it. We display only the first and last octet on screen.</div>
       </li>
       <li class="source-item">
         <div class="source-label">Browser APIs</div>
@@ -388,7 +404,7 @@
       <li class="source-item">
         <div class="source-label">What this page sent</div>
         <div class="source-cite">Nothing to third parties</div>
-        <div class="source-note">No external analytics, no advertising beacons, no tracking pixels. The IP geolocation lookup routes through a proxy that retains nothing. All fingerprint computation happens in your browser and stays there.</div>
+        <div class="source-note">No external analytics, no advertising beacons, no tracking pixels. The IP geolocation lookup uses a CORS‑friendly service that retains nothing. All fingerprint computation happens in your browser and stays there.</div>
       </li>
       <li class="source-item">
         <div class="source-label">What this page stored</div>
@@ -421,7 +437,7 @@ let scrollPauses = 0, pauseStart = null, longestPause = 0;
 let prefersReducedMotion = false;
 try { prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
 
-/* ── Behavioral ── */
+/* Behavioral tracking */
 document.addEventListener('mousemove',  () => mouseMovements++, { passive: true });
 document.addEventListener('touchmove',  () => mouseMovements++, { passive: true });
 document.addEventListener('click',      () => clicks++);
@@ -470,7 +486,7 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/* ── Barcode ── */
+/* Barcode */
 function deterministicBars(d) {
   const parts = [
     (d.geo && d.geo.city) || '', (d.geo && d.geo.country) || '',
@@ -535,7 +551,7 @@ function captureWhenSeen(el, populator, fallbackMs) {
   setTimeout(trigger, fallbackMs || 60000);
 }
 
-/* ── Collect ── */
+/* Collect — using ipapi.co for reliable location */
 async function collect() {
   const nav = navigator, scr = screen, w = window;
   const hour = ARRIVAL.getHours(), minute = ARRIVAL.getMinutes();
@@ -638,11 +654,22 @@ async function collect() {
   let geo = null;
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 3000);
-    const r = await fetch('https://ip-api.com/json/?fields=status,city,regionName,country,isp,query', { signal: ctrl.signal });
+    const timer = setTimeout(() => ctrl.abort(), 4000);
+    const r = await fetch('https://ipapi.co/json/', { signal: ctrl.signal });
     clearTimeout(timer);
-    if (r.ok) { const j = await r.json(); if (j && j.status === 'success') geo = j; }
-  } catch(e) {}
+    if (r.ok) {
+      const j = await r.json();
+      if (j && j.city && j.country_name) {
+        geo = {
+          city: j.city,
+          regionName: j.region,
+          country: j.country_name,
+          isp: j.org || j.asn,
+          query: j.ip
+        };
+      }
+    }
+  } catch(e) { console.warn('Geo lookup failed', e); }
 
   let orientation = null, orientationBlocked = false;
   if (isMobile) {
@@ -667,7 +694,7 @@ async function collect() {
            orientationBlocked, coarseOrientation };
 }
 
-/* ── Build ── */
+/* Build observations (same as original) */
 function build(d) {
   const obs = [], dp = { v: 0 };
 
@@ -801,7 +828,7 @@ function build(d) {
   return obs;
 }
 
-/* ── Render ── */
+/* Render (unchanged except removing old scanning hide/show) */
 async function render() {
   const d = await collect();
   const obs = build(d);
@@ -937,7 +964,6 @@ async function render() {
   setTimeout(() => footerEl.classList.add('visible'), climaxStart + 9400);
 }
 
-/* ── Live counter ── */
 function tick() {
   if (!counterVisible) { requestAnimationFrame(tick); return; }
   const el = document.getElementById('liveCounter');
@@ -952,7 +978,6 @@ function tick() {
 }
 requestAnimationFrame(tick);
 
-/* ── Modals ── */
 const shareModal = document.getElementById('shareModal');
 const sourcesModal = document.getElementById('sourcesModal');
 
