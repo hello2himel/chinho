@@ -44,7 +44,7 @@
     align-items: center;
     overflow-x: hidden;
     position: relative;
-    cursor: default;  /* changed from crosshair to pointer as requested */
+    cursor: default;
   }
 
   /* Cursor trail canvas — sits at the very bottom (z-index: 0) so everything else is above */
@@ -394,8 +394,8 @@
     <ul class="source-list">
       <li class="source-item">
         <div class="source-label">Your location</div>
-        <div class="source-cite"><a href="https://ipapi.co" target="_blank" rel="noopener noreferrer">ipapi.co · Free tier · CORS-enabled</a></div>
-        <div class="source-note">Your IP address arrives in the header of every request your device makes. We pass it to ipapi.co to translate it into a city and ISP name. Neither side stores it. We display only the first and last octet on screen.</div>
+        <div class="source-cite"><a href="https://ipapi.co" target="_blank" rel="noopener noreferrer">ipapi.co via Netlify Function</a></div>
+        <div class="source-note">Your IP address arrives in the header of every request. Our server‑side function (Netlify) securely fetches your location from ipapi.co and returns it. No third‑party requests are made from your browser, and nothing is stored.</div>
       </li>
       <li class="source-item">
         <div class="source-label">Browser APIs</div>
@@ -420,7 +420,7 @@
       <li class="source-item">
         <div class="source-label">What this page sent</div>
         <div class="source-cite">Nothing to third parties</div>
-        <div class="source-note">No external analytics, no advertising beacons, no tracking pixels. The IP geolocation lookup uses a CORS‑friendly service that retains nothing. All fingerprint computation happens in your browser and stays there.</div>
+        <div class="source-note">No external analytics, no advertising beacons, no tracking pixels. The IP geolocation lookup uses a server‑side Netlify function, so no third‑party request ever leaves your browser. All fingerprint computation happens locally.</div>
       </li>
       <li class="source-item">
         <div class="source-label">What this page stored</div>
@@ -667,7 +667,7 @@ function captureWhenSeen(el, populator, fallbackMs) {
   setTimeout(trigger, fallbackMs || 60000);
 }
 
-/* ========== DATA COLLECTION (ipapi.co for reliable location) ========== */
+/* ========== DATA COLLECTION — Netlify Function ========== */
 async function collect() {
   const nav = navigator, scr = screen, w = window;
   const hour = ARRIVAL.getHours(), minute = ARRIVAL.getMinutes();
@@ -771,21 +771,22 @@ async function collect() {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 4000);
-    const r = await fetch('https://ipapi.co/json/', { signal: ctrl.signal });
+    // Call our own Netlify function instead of a third-party API directly
+    const r = await fetch('/.netlify/functions/geo', { signal: ctrl.signal });
     clearTimeout(timer);
     if (r.ok) {
       const j = await r.json();
-      if (j && j.city && j.country_name) {
+      if (j && j.success && j.city && j.country_name) {
         geo = {
           city: j.city,
           regionName: j.region,
           country: j.country_name,
-          isp: j.org || j.asn,
+          isp: j.org,
           query: j.ip
         };
       }
     }
-  } catch(e) { console.warn('Geo lookup failed', e); }
+  } catch(e) { console.warn('Geo lookup via Netlify function failed', e); }
 
   let orientation = null, orientationBlocked = false;
   if (isMobile) {
