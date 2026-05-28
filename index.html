@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Chinho</title>
+<title>চিহ্ন (Chinho) — What Your Browser Gave Away</title>
 <meta name="description" content="What your browser reveals the moment you arrive. No input. No permission. No exception.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +44,18 @@
     align-items: center;
     overflow-x: hidden;
     position: relative;
+    cursor: pointer;  /* changed from crosshair to pointer as requested */
+  }
+
+  /* Cursor trail canvas — sits at the very bottom (z-index: 0) so everything else is above */
+  #trailCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
   }
 
   .page { width: 100%; max-width: 640px; padding: 0 24px; position: relative; z-index: 2; }
@@ -129,12 +141,22 @@
     font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.06em;
     color: var(--faint); text-align: center; padding: 1rem 1.5rem;
     background: linear-gradient(transparent, var(--bg) 40%);
-    pointer-events: none; opacity: 0; transition: opacity 0.8s ease; z-index: 10;
+    pointer-events: none; opacity: 0; transition: opacity 0.8s ease; z-index: 60;
   }
   .live-counter.visible { opacity: 1; }
   .live-counter span { color: var(--dim); }
 
-  /* Closing */
+  /* Tab notice */
+  .tab-notice {
+    position: fixed; top: 0; left: 0; right: 0;
+    font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em;
+    color: var(--accent); text-align: center; padding: 0.85rem 1rem;
+    background: var(--bg); border-bottom: 1px solid var(--faint);
+    opacity: 0; transform: translateY(-100%); transition: all 0.5s ease; z-index: 70; pointer-events: none;
+  }
+  .tab-notice.visible { opacity: 1; transform: translateY(0); }
+
+  /* Closing blocks */
   .closing { padding: 4vh 0 3vh; }
   .closing-tally { text-align: center; padding: 6vh 0 5vh; opacity: 0; transform: translateY(14px); }
   .closing-tally.visible { animation: fadeUp 1.6s ease forwards; }
@@ -190,17 +212,7 @@
   .colophon-credit a { color: var(--faint); border-bottom: 1px dotted var(--darkest); text-decoration: none; transition: color 0.25s ease; }
   .colophon-credit a:hover { color: var(--accent); }
 
-  /* Tab notice */
-  .tab-notice {
-    position: fixed; top: 0; left: 0; right: 0;
-    font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em;
-    color: var(--accent); text-align: center; padding: 0.85rem 1rem;
-    background: var(--bg); border-bottom: 1px solid var(--faint);
-    opacity: 0; transform: translateY(-100%); transition: all 0.5s ease; z-index: 20; pointer-events: none;
-  }
-  .tab-notice.visible { opacity: 1; transform: translateY(0); }
-
-  /* Modals */
+  /* Modals — higher z-index than canvas and page content */
   .modal {
     position: fixed; inset: 0; background: rgba(10,10,10,0.92);
     display: none; align-items: flex-start; justify-content: center;
@@ -230,7 +242,9 @@
   .seal-btn:hover, .seal-btn:focus { border-color: var(--accent); color: var(--accent); outline: none; }
   .seal-btn.full-row { grid-column: 1 / -1; }
   .share-close-row { text-align: center; margin-top: 0.8rem; }
-  .share-close { background: none; border: none; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); cursor: pointer; padding: 0.6rem 1rem; }
+  .share-close {
+    background: none; border: none; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); cursor: pointer; padding: 0.6rem 1rem;
+  }
   .share-close:hover, .share-close:focus { color: var(--fg); outline: none; }
 
   /* Sources modal */
@@ -294,6 +308,8 @@
 </head>
 <body>
 
+<canvas id="trailCanvas"></canvas>
+
 <noscript>
   <div style="max-width:640px;margin:6rem auto;padding:0 1.5rem;font-family:'EB Garamond',Georgia,serif;color:#e8e4df;">
     <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;color:#6b6560;margin-bottom:2.5rem;">চিহ্ন (Chinho)</div>
@@ -328,10 +344,10 @@
 
   <div class="footer" id="footer">
     <p>This page reads what your browser gives away — without asking, without storing, without exceptions.</p>
-    <div class="footer-meta" id="footer-edition">Chinho · 2025</div>
+    <div class="footer-meta" id="footer-edition">Chinho</div>
     
     <div class="footer-made">
-      ✦ Made by <a href="https://hello2himel.netlify.app" target="_blank" rel="noopener noreferrer">@hello2himel</a> (<a href="https://hello2himel.netlify.app" target="_blank" rel="noopener noreferrer">hello2himel.netlify.app</a>) — to spread awareness about browser fingerprinting.
+      ✦ Made by <a href="https://hello2himel.netlify.app" target="_blank" rel="noopener noreferrer">@hello2himel</a> — to spread awareness about browser fingerprinting.
     </div>
     
     <div class="colophon-credit">
@@ -437,7 +453,107 @@ let scrollPauses = 0, pauseStart = null, longestPause = 0;
 let prefersReducedMotion = false;
 try { prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
 
-/* Behavioral tracking */
+/* ========== CURSOR TRAIL (PENCIL MARK) ========== */
+const trailCanvas = document.getElementById('trailCanvas');
+let ctx = trailCanvas.getContext('2d');
+let painting = false;
+let lastX = 0, lastY = 0;
+let fadeInterval;
+
+function resizeCanvas() {
+  trailCanvas.width = window.innerWidth;
+  trailCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+ctx.shadowBlur = 0;
+const trailColor = 'rgba(196, 168, 130, 0.22)';
+
+function drawDot(x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = trailColor;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(196, 168, 130, 0.4)';
+  ctx.fill();
+}
+
+function drawLine(fromX, fromY, toX, toY) {
+  ctx.beginPath();
+  ctx.moveTo(fromX, fromY);
+  ctx.lineTo(toX, toY);
+  ctx.strokeStyle = trailColor;
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
+  drawDot(toX, toY);
+}
+
+function fadeTrail() {
+  ctx.fillStyle = 'rgba(10, 10, 10, 0.25)';
+  ctx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+}
+
+function startFadeLoop() {
+  if (fadeInterval) clearInterval(fadeInterval);
+  fadeInterval = setInterval(() => {
+    if (!document.hidden) fadeTrail();
+  }, 180);
+}
+
+function handleMove(e) {
+  let x, y;
+  if (e.touches) {
+    x = e.touches[0].clientX;
+    y = e.touches[0].clientY;
+  } else {
+    x = e.clientX;
+    y = e.clientY;
+  }
+  if (painting && lastX !== undefined) {
+    drawLine(lastX, lastY, x, y);
+  } else {
+    drawDot(x, y);
+    painting = true;
+  }
+  lastX = x;
+  lastY = y;
+}
+
+function handleStart(e) {
+  painting = true;
+  let x, y;
+  if (e.touches) {
+    x = e.touches[0].clientX;
+    y = e.touches[0].clientY;
+  } else {
+    x = e.clientX;
+    y = e.clientY;
+  }
+  lastX = x;
+  lastY = y;
+  drawDot(x, y);
+}
+
+function handleEnd() {
+  painting = false;
+  lastX = undefined;
+  lastY = undefined;
+}
+
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('mousedown', handleStart);
+window.addEventListener('mouseup', handleEnd);
+window.addEventListener('touchmove', handleMove);
+window.addEventListener('touchstart', handleStart);
+window.addEventListener('touchend', handleEnd);
+startFadeLoop();
+
+/* ========== BEHAVIORAL TRACKING ========== */
 document.addEventListener('mousemove',  () => mouseMovements++, { passive: true });
 document.addEventListener('touchmove',  () => mouseMovements++, { passive: true });
 document.addEventListener('click',      () => clicks++);
@@ -486,7 +602,7 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/* Barcode */
+/* ========== FINGERPRINT BARCODE ========== */
 function deterministicBars(d) {
   const parts = [
     (d.geo && d.geo.city) || '', (d.geo && d.geo.country) || '',
@@ -551,7 +667,7 @@ function captureWhenSeen(el, populator, fallbackMs) {
   setTimeout(trigger, fallbackMs || 60000);
 }
 
-/* Collect — using ipapi.co for reliable location */
+/* ========== DATA COLLECTION (ipapi.co for reliable location) ========== */
 async function collect() {
   const nav = navigator, scr = screen, w = window;
   const hour = ARRIVAL.getHours(), minute = ARRIVAL.getMinutes();
@@ -694,10 +810,9 @@ async function collect() {
            orientationBlocked, coarseOrientation };
 }
 
-/* Build observations (same as original) */
+/* BUILD OBSERVATIONS (full, identical to original) */
 function build(d) {
   const obs = [], dp = { v: 0 };
-
   if (d.geo) {
     const masked = maskIp(d.geo.query);
     obs.push({
@@ -707,14 +822,12 @@ function build(d) {
     });
     dp.v += 5;
   }
-
   obs.push({
     label: 'When you arrived',
     datum: String(d.hour).padStart(2,'0') + ':' + String(d.minute).padStart(2,'0') + ' · ' + d.tzPretty,
     prose: 'It is ' + d.timeOfDay + ' where you are. Your device reported your timezone before the page finished loading. A website knowing your local time can infer when you sleep, when you work, and when you browse because you cannot sleep.'
   });
   dp.v += 2;
-
   const screenLooksMasked = d.screenW === d.innerW && d.screenH === d.innerH;
   const browserKnown = d.browser !== 'a browser', osKnown = d.os !== 'an operating system';
   const devStr = (browserKnown ? d.browser : '?') + ' · ' + (osKnown ? d.os : '?') + ' · ' + d.screenW + '×' + d.screenH + ' @ ' + d.pixelRatio + 'x · ' + d.colorDepth + '-bit color';
@@ -723,7 +836,6 @@ function build(d) {
   else if (osKnown) devP = 'You are reading this on ' + d.deviceType + ' running ' + d.os + '. Your browser kept its identity hidden. Your screen is ' + d.screenW + ' by ' + d.screenH + ' pixels';
   else if (browserKnown) devP = 'You are reading this in ' + d.browser + '. Your operating system stayed hidden. Your screen is ' + d.screenW + ' by ' + d.screenH + ' pixels';
   else devP = 'Your device kept its identity quiet. Your screen is ' + d.screenW + ' by ' + d.screenH + ' pixels';
-
   const looksModern = d.pixelRatio >= 2 && Math.max(d.screenW, d.screenH) >= 390;
   if      (looksModern)      devP += ', rendered at ' + d.pixelRatio + 'x density — almost certainly a recent, high-end display. ';
   else if (d.pixelRatio > 1) devP += ', rendered at ' + d.pixelRatio + 'x density. ';
@@ -733,7 +845,6 @@ function build(d) {
   devP += 'Your device volunteered all of this in the first milliseconds of the connection.';
   obs.push({ label: 'What you brought with you', datum: devStr, prose: devP });
   dp.v += 7;
-
   let gpuShort = null;
   if (d.gpu) {
     let raw = String(d.gpu).replace(/^ANGLE \(/, '').replace(/\)$/, '');
@@ -749,7 +860,6 @@ function build(d) {
     obs.push({ label: 'What renders your world', datum: 'GPU: kept back', prose: 'Your browser masked your graphics processor. Firefox and Safari have started returning generic strings instead of the real renderer. The fact that yours did so tells us, with reasonable confidence, which browser you are running. The mask is also a fingerprint.' });
   }
   dp.v += 1;
-
   if (d.battery) {
     let bP;
     if (d.battery.indistinguishable) bP = 'Your device reports 100%, charging — which is also what no-battery-at-all looks like to a webpage. We cannot tell whether you are a laptop on full charge or a desktop without a battery, and neither can any other site. ';
@@ -761,7 +871,6 @@ function build(d) {
     obs.push({ label: 'How much is left', datum: 'Battery: kept back', prose: 'Your browser kept your battery level back. Firefox removed this API entirely in 2016, after researchers proved it could be used to track a visitor across websites without cookies. The capability is still in the specification. It was simply hidden.' });
     dp.v += 1;
   }
-
   let langStr = d.langPretty;
   if (d.otherLangs.length > 0) langStr += ' · ' + d.otherLangs.join(' · ');
   let lP = 'Your browser\'s primary language is ' + d.langPretty + '. ';
@@ -769,7 +878,6 @@ function build(d) {
   lP += 'This is transmitted in the header of every HTTP request. It has been doing this for as long as you have used this browser.';
   obs.push({ label: 'What you speak', datum: langStr, prose: lP });
   dp.v += 1 + d.otherLangs.length;
-
   if (d.orientation) {
     const beta = d.orientation.beta;
     let posture = 'at an angle';
@@ -784,7 +892,6 @@ function build(d) {
     obs.push({ label: 'How you are holding it', datum: 'Gyroscope: kept back by iOS', prose: line });
     dp.v += 1;
   }
-
   if (d.installed.length > 0) {
     const stockOS = d.os === 'iOS' || d.os === 'Android';
     let fP = stockOS
@@ -794,14 +901,12 @@ function build(d) {
     obs.push({ label: 'What you carry', datum: d.installed.join(' · '), prose: fP });
     dp.v += d.installed.length;
   }
-
   const allowParts = [];
   allowParts.push(d.cookiesEnabled ? 'Cookies: enabled' : 'Cookies: disabled');
   allowParts.push(d.darkMode ? 'Dark mode' : 'Light mode');
   if (d.reducedMotion) allowParts.push('Reduced motion');
   if (d.doNotTrack)    allowParts.push('Do Not Track');
   if (d.storage)       allowParts.push(d.storage.used + ' MB stored by others');
-
   let stP = d.cookiesEnabled
     ? 'Your browser accepts cookies. Websites can write small files to your device that persist after you leave — files that identify you when you return, that follow you across sites. We have not written one. '
     : 'Your browser has cookies disabled. This is unusual. You chose this deliberately, or someone configured it for you. ';
@@ -816,23 +921,20 @@ function build(d) {
   stP += 'This page stores nothing on your device. When you close this tab, it forgets you exist.';
   obs.push({ label: 'What you allow', datum: allowParts.join(' · '), prose: stP });
   dp.v += allowParts.length;
-
   if (d.referrer) {
     let ref = d.referrer;
     try { ref = new URL(d.referrer).hostname; } catch(e) {}
     obs.push({ label: 'Where you were before', datum: ref, prose: 'You came here from ' + ref + '. Your browser told us the address of the page you were reading before this one. Every link you follow tells the destination where you were. The page you just left knows you left. This page knows where you came from. Neither was asked.' });
     dp.v += 1;
   }
-
   dataPoints = dp.v;
   return obs;
 }
 
-/* Render (unchanged except removing old scanning hide/show) */
+/* RENDER (identical to previous working version) */
 async function render() {
   const d = await collect();
   const obs = build(d);
-
   const container = document.getElementById('observations');
   const closingEl = document.getElementById('closing');
   const footerEl  = document.getElementById('footer');
@@ -840,10 +942,8 @@ async function render() {
   const counterEl = document.getElementById('liveCounter');
   const dossierEl = document.getElementById('dossierRule');
   const titleEl   = document.getElementById('title');
-
   if (prefersReducedMotion) titleEl.classList.add('no-flicker');
   else titleEl.classList.add('flicker');
-
   let html = '';
   obs.forEach((o, i) => {
     if (i > 0) html += '<div class="divider" data-i="' + i + '"></div>';
@@ -854,10 +954,8 @@ async function render() {
             '</div>';
   });
   container.innerHTML = html;
-
   const BASE = 5500, GAP = 2200;
   setTimeout(() => scanEl.classList.add('done'), BASE - 400);
-
   container.querySelectorAll('.obs').forEach((el, i) => {
     setTimeout(() => {
       el.classList.add('visible');
@@ -874,11 +972,8 @@ async function render() {
   container.querySelectorAll('.divider').forEach((el, i) => {
     setTimeout(() => el.classList.add('visible'), BASE + (i + 1) * GAP - 700);
   });
-
   setTimeout(() => { counterVisible = true; counterEl.classList.add('visible'); }, BASE + 3 * GAP);
-
   const climaxStart = BASE + obs.length * GAP + 1500;
-
   setTimeout(() => {
     const bars = deterministicBars(d);
     const barcodeSvg = renderBarcodeSvg(bars);
@@ -895,7 +990,6 @@ async function render() {
       setTimeout(() => animateCountUp(document.getElementById('tallyNumber'), dataPoints, 1400), 400);
     });
   }, climaxStart);
-
   setTimeout(() => {
     const thesis = document.createElement('div');
     thesis.className = 'closing-thesis';
@@ -903,7 +997,6 @@ async function render() {
     closingEl.appendChild(thesis);
     requestAnimationFrame(() => thesis.classList.add('visible'));
   }, climaxStart + 1800);
-
   setTimeout(() => {
     const beh = document.createElement('div');
     beh.className = 'closing-behavioral';
@@ -925,7 +1018,6 @@ async function render() {
         tabNote + cursorNote + clickNote + pauseNote + ' We were not counting. We were always counting.';
     });
   }, climaxStart + 3800);
-
   setTimeout(() => {
     const fin = document.createElement('div');
     fin.className = 'closing-final';
@@ -940,27 +1032,23 @@ async function render() {
       document.getElementById('finalTime').textContent = 'It did this in ' + elapsed + ' seconds.';
     });
   }, climaxStart + 5800);
-
   setTimeout(() => {
     const src = document.createElement('div');
     src.className = 'closing-source-line';
     src.innerHTML = 'Open the source. Read it. We have nothing to hide. Most pages cannot say that.';
     closingEl.appendChild(src);
     requestAnimationFrame(() => src.classList.add('visible'));
-
     const shareBtn = document.createElement('button');
     shareBtn.className = 'share-trigger'; shareBtn.type = 'button'; shareBtn.id = 'shareBtn';
     shareBtn.textContent = 'tell someone';
     shareBtn.addEventListener('click', openShare);
     closingEl.appendChild(shareBtn);
-
     const sourcesBtn = document.createElement('button');
     sourcesBtn.className = 'sources-trigger'; sourcesBtn.type = 'button'; sourcesBtn.id = 'sourcesBtn';
     sourcesBtn.textContent = 'sources & confessions';
     sourcesBtn.addEventListener('click', openSources);
     closingEl.appendChild(sourcesBtn);
   }, climaxStart + 7600);
-
   setTimeout(() => footerEl.classList.add('visible'), climaxStart + 9400);
 }
 
