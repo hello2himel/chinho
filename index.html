@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chinho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F6F2;
+    --bg2: #EFEDE7;
+    --ink: #1A1917;
+    --ink2: #6B6861;
+    --ink3: #B0ADA6;
+    --red: #C0392B;
+    --red-soft: #F5E8E7;
+    --border: rgba(26,25,23,0.1);
+    --border-strong: rgba(26,25,23,0.2);
+  }
+
+  html { background: var(--bg); }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    padding: 2rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.4rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .logo span { font-style: italic; color: var(--red); }
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    color: var(--ink3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* HERO */
+  .hero {
+    padding: 5rem 3rem 3rem;
+    max-width: 760px;
+  }
+  .hero-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 1.5rem;
+  }
+  .hero-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--red);
+  }
+  .hero-sub {
+    font-size: 0.8rem;
+    color: var(--ink2);
+    line-height: 1.8;
+    max-width: 480px;
+    letter-spacing: 0.01em;
+  }
+
+  /* FINGERPRINT SCORE */
+  .score-section {
+    margin: 1rem 3rem 0;
+    padding: 2rem;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+  }
+  .score-number {
+    font-family: 'Instrument Serif', serif;
+    font-size: 4rem;
+    color: var(--red);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .score-number span { font-size: 1.5rem; color: var(--bg); }
+  .score-info { flex: 1; }
+  .score-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.75rem;
+  }
+  .score-bar-track {
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+  .score-bar-fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 99px;
+    width: 0;
+    transition: width 2s cubic-bezier(.4,0,.2,1);
+  }
+  .score-desc {
+    font-size: 0.7rem;
+    color: #999;
+    line-height: 1.6;
+  }
+
+  /* DIVIDER */
+  .divider {
+    margin: 3rem 3rem 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+  .section-label {
+    padding: 2rem 3rem 1.25rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* MAIN REVEAL GRID */
+  .reveal-wrap {
+    padding: 0 3rem;
+  }
+  .reveal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .reveal-cell {
+    background: var(--bg);
+    padding: 1.5rem;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .reveal-cell:hover { background: var(--bg2); }
+  .cell-key {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cell-danger {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+  }
+  .cell-val {
+    font-size: 0.82rem;
+    color: var(--ink);
+    line-height: 1.5;
+    word-break: break-all;
+    min-height: 1.2rem;
+  }
+  .cell-val.loading {
+    color: var(--ink3);
+  }
+  .cell-val.revealed {
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SENTENCE SECTION — the eerie "you are" part */
+  .sentence-section {
+    padding: 3rem;
+    max-width: 680px;
+  }
+  .sentence-intro {
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .sentence-intro::after {
+    content: '';
+    flex: 1;
+    max-width: 80px;
+    height: 1px;
+    background: var(--border);
+  }
+  .sentence {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    line-height: 1.55;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .sentence-fill {
+    color: var(--red);
+    font-style: italic;
+    border-bottom: 1px solid var(--red);
+  }
+  .sentence-fill.blank {
+    color: var(--ink3);
+    border-bottom: 1px dashed var(--ink3);
+    font-style: normal;
+    font-size: 0.9em;
+  }
+
+  /* SENSOR SECTION */
+  .sensor-section {
+    padding: 0 3rem 3rem;
+  }
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  @media (max-width: 600px) { .sensor-grid { grid-template-columns: 1fr; } }
+  .sensor-cell {
+    background: var(--bg);
+    padding: 1.5rem;
+  }
+  .sensor-name {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 0.5rem;
+  }
+  .sensor-val {
+    font-size: 0.85rem;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .sensor-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 0.75rem;
+  }
+  .sensor-bar-fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 99px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  /* HASH */
+  .hash-section {
+    margin: 0 3rem 3rem;
+    padding: 1.75rem 2rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+  .hash-label-col { flex-shrink: 0; }
+  .hash-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 0.5rem;
+  }
+  .hash-sublabel {
+    font-size: 0.68rem;
+    color: var(--ink2);
+    line-height: 1.6;
+    max-width: 160px;
+  }
+  .hash-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--red);
+    letter-spacing: 0.05em;
+    word-break: break-all;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem 3rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .footer-left {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1rem;
+    color: var(--ink2);
+  }
+  .footer-left span { font-style: italic; color: var(--red); }
+  .footer-right {
+    font-size: 0.68rem;
+    color: var(--ink3);
+    line-height: 1.6;
+    text-align: right;
+    max-width: 340px;
+  }
+
+  @media (max-width: 640px) {
+    header, .hero, .score-section, .reveal-wrap, .sensor-section,
+    .sentence-section, .hash-section, footer,
+    .section-label { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .score-section { flex-direction: column; gap: 1.5rem; }
+    .hash-section { flex-direction: column; gap: 1rem; }
+    .hash-sublabel { max-width: 100%; }
+    footer { flex-direction: column; align-items: flex-start; }
+    .footer-right { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Chin<span>ho</span></div>
+  <div class="status-dot"><div class="dot"></div>scanning</div>
+</header>
+
+<section class="hero">
+  <p class="hero-eyebrow">Browser fingerprinting · real-time</p>
+  <h1 class="hero-title">We know<br><em>exactly</em> who you are.</h1>
+  <p class="hero-sub">No login. No cookies. No permission requested. Your browser volunteered everything below before you finished reading this sentence.</p>
+</section>
+
+<div class="score-section" style="margin: 1rem 3rem 0; border-radius: 4px;">
+  <div class="score-number" id="scoreNum">—<span>%</span></div>
+  <div class="score-info">
+    <p class="score-label">uniqueness score</p>
+    <div class="score-bar-track"><div class="score-bar-fill" id="scoreBar"></div></div>
+    <p class="score-desc" id="scoreDesc">Calculating how identifiable your browser is across the web...</p>
+  </div>
+</div>
+
+<hr class="divider">
+<p class="section-label">what your browser told us</p>
+
+<div class="reveal-wrap">
+  <div class="reveal-grid" id="revealGrid"></div>
+</div>
+
+<section class="sentence-section">
+  <p class="sentence-intro">our read on you</p>
+  <p class="sentence" id="sentenceBlock">
+    Detecting your environment...
+  </p>
+</section>
+
+<hr class="divider" style="margin-top: 0;">
+<p class="section-label">live sensors</p>
+
+<div class="sensor-section">
+  <div class="sensor-grid">
+    <div class="sensor-cell">
+      <p class="sensor-name">Battery</p>
+      <p class="sensor-val" id="battVal">—</p>
+      <div class="sensor-bar"><div class="sensor-bar-fill" id="battBar"></div></div>
+    </div>
+    <div class="sensor-cell">
+      <p class="sensor-name">Gyroscope</p>
+      <p class="sensor-val" id="gyroVal">waiting...</p>
+      <div class="sensor-bar"><div class="sensor-bar-fill" id="gyroBar"></div></div>
+    </div>
+    <div class="sensor-cell">
+      <p class="sensor-name">Accelerometer</p>
+      <p class="sensor-val" id="accelVal">waiting...</p>
+      <div class="sensor-bar"><div class="sensor-bar-fill" id="accelBar"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="hash-section">
+  <div class="hash-label-col">
+    <p class="hash-label">fingerprint</p>
+    <p class="hash-sublabel">A unique ID derived entirely from passive browser signals. No cookies used.</p>
+  </div>
+  <div class="hash-value" id="hashVal">computing...</div>
+</div>
+
+<footer>
+  <div class="footer-left">Chin<span>ho</span></div>
+  <div class="footer-right">All data is collected and processed entirely in your browser. Nothing is transmitted. This is a demonstration of what every website you visit can silently know about you.</div>
+</footer>
+
+<script>
+const fields = [
+  { key: 'Your browser', id: 'f_browser', danger: true },
+  { key: 'Operating system', id: 'f_os', danger: true },
+  { key: 'Device type', id: 'f_device', danger: false },
+  { key: 'Language(s)', id: 'f_lang', danger: false },
+  { key: 'Timezone', id: 'f_tz', danger: true },
+  { key: 'Local time', id: 'f_time', danger: false },
+  { key: 'UTC offset', id: 'f_utc', danger: false },
+  { key: 'Screen resolution', id: 'f_screen', danger: false },
+  { key: 'Available screen', id: 'f_avail', danger: false },
+  { key: 'Viewport', id: 'f_viewport', danger: false },
+  { key: 'Device pixel ratio', id: 'f_dpr', danger: false },
+  { key: 'Color depth', id: 'f_color', danger: false },
+  { key: 'CPU cores', id: 'f_cpu', danger: true },
+  { key: 'RAM', id: 'f_ram', danger: true },
+  { key: 'Touch support', id: 'f_touch', danger: false },
+  { key: 'Max touch points', id: 'f_touchpts', danger: false },
+  { key: 'Connection type', id: 'f_conn', danger: true },
+  { key: 'Downlink speed', id: 'f_downlink', danger: false },
+  { key: 'RTT latency', id: 'f_rtt', danger: false },
+  { key: 'Do Not Track', id: 'f_dnt', danger: false },
+  { key: 'Cookies enabled', id: 'f_cookies', danger: false },
+  { key: 'Local storage', id: 'f_ls', danger: false },
+  { key: 'Service workers', id: 'f_sw', danger: false },
+  { key: 'WebGL GPU', id: 'f_gpu', danger: true },
+  { key: 'Canvas hash', id: 'f_canvas', danger: true },
+  { key: 'Audio hash', id: 'f_audio', danger: true },
+  { key: 'Plugins', id: 'f_plugins', danger: false },
+  { key: 'PDF viewer', id: 'f_pdf', danger: false },
+  { key: 'Color scheme', id: 'f_scheme', danger: false },
+  { key: 'Reduced motion', id: 'f_motion', danger: false },
+  { key: 'Pointer type', id: 'f_pointer', danger: false },
+  { key: 'Color gamut', id: 'f_gamut', danger: false },
+  { key: 'HDR support', id: 'f_hdr', danger: false },
+  { key: 'Notifications', id: 'f_notif', danger: true },
+  { key: 'Platform string', id: 'f_platform', danger: true },
+];
+
+const grid = document.getElementById('revealGrid');
+fields.forEach(f => {
+  const cell = document.createElement('div');
+  cell.className = 'reveal-cell';
+  cell.innerHTML = `<div class="cell-key">${f.danger ? '<span class="cell-danger"></span>' : ''}${f.key}</div><div class="cell-val loading" id="${f.id}">—</div>`;
+  grid.appendChild(cell);
+});
+
+function set(id, val) {
+  const e = document.getElementById(id);
+  if (!e) return;
+  e.textContent = val;
+  e.classList.remove('loading');
+  e.classList.add('revealed');
+}
+
+function simpleHash(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
+
+function detectBrowser(ua) {
+  if (/Edg\//.test(ua)) return 'Microsoft Edge';
+  if (/OPR\/|Opera/.test(ua)) return 'Opera';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) return 'Chrome';
+  if (/Safari\//.test(ua) && !/Chrome/.test(ua)) return 'Safari';
+  if (/Chromium/.test(ua)) return 'Chromium';
+  return 'Unknown browser';
+}
+
+function detectOS(ua) {
+  if (/Windows NT 10/.test(ua)) return 'Windows 10 / 11';
+  if (/Windows NT 6\.3/.test(ua)) return 'Windows 8.1';
+  if (/Windows/.test(ua)) return 'Windows';
+  if (/iPhone/.test(ua)) return 'iOS (iPhone)';
+  if (/iPad/.test(ua)) return 'iOS (iPad)';
+  if (/Android/.test(ua)) return 'Android ' + (ua.match(/Android ([0-9.]+)/)||['','?'])[1];
+  if (/Mac OS X/.test(ua)) return 'macOS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Unknown OS';
+}
+
+function detectDevice(ua) {
+  if (/Mobi|Android|iPhone/.test(ua)) return 'Mobile';
+  if (/iPad|Tablet/.test(ua)) return 'Tablet';
+  return 'Desktop';
+}
+
+function collect() {
+  const nav = navigator;
+  const ua = nav.userAgent;
+  const scr = screen;
+
+  set('f_browser', detectBrowser(ua));
+  set('f_os', detectOS(ua));
+  set('f_device', detectDevice(ua));
+  set('f_lang', (nav.languages || [nav.language]).slice(0,4).join(', '));
+  set('f_tz', Intl.DateTimeFormat().resolvedOptions().timeZone);
+  set('f_time', new Date().toLocaleTimeString());
+  const offset = -(new Date().getTimezoneOffset());
+  set('f_utc', `UTC${offset >= 0 ? '+' : ''}${offset/60}`);
+  set('f_screen', `${scr.width} × ${scr.height}`);
+  set('f_avail', `${scr.availWidth} × ${scr.availHeight}`);
+  set('f_viewport', `${window.innerWidth} × ${window.innerHeight}`);
+  set('f_dpr', `${window.devicePixelRatio}×`);
+  set('f_color', `${scr.colorDepth}-bit`);
+  set('f_cpu', nav.hardwareConcurrency ? `${nav.hardwareConcurrency} logical cores` : 'not exposed');
+  set('f_ram', nav.deviceMemory ? `${nav.deviceMemory} GB` : 'not exposed');
+  set('f_touch', 'ontouchstart' in window || nav.maxTouchPoints > 0 ? 'Yes' : 'No');
+  set('f_touchpts', String(nav.maxTouchPoints || 0));
+  const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
+  set('f_conn', conn ? (conn.effectiveType || '?').toUpperCase() : 'not exposed');
+  set('f_downlink', conn && conn.downlink ? `${conn.downlink} Mbps` : 'not exposed');
+  set('f_rtt', conn && conn.rtt != null ? `${conn.rtt} ms` : 'not exposed');
+  set('f_dnt', nav.doNotTrack === '1' ? 'Enabled (bypassed anyway)' : 'Not set');
+  set('f_cookies', nav.cookieEnabled ? 'Enabled' : 'Disabled');
+  try { localStorage.setItem('_t', '1'); localStorage.removeItem('_t'); set('f_ls', 'Available'); } catch(e) { set('f_ls', 'Blocked'); }
+  set('f_sw', 'serviceWorker' in nav ? 'Supported' : 'Not supported');
+  set('f_plugins', nav.plugins ? `${nav.plugins.length} detected` : 'Blocked');
+  set('f_pdf', Array.from(nav.plugins||[]).some(p => /pdf/i.test(p.name)) ? 'Yes' : 'No / unknown');
+  set('f_scheme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark' : 'Light');
+  set('f_motion', window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'Reduced motion' : 'Normal');
+  set('f_pointer', window.matchMedia('(pointer: fine)').matches ? 'Fine (mouse)' : window.matchMedia('(pointer: coarse)').matches ? 'Coarse (touch)' : 'None');
+  set('f_gamut', window.matchMedia('(color-gamut: p3)').matches ? 'P3 (wide gamut)' : 'sRGB');
+  set('f_hdr', window.matchMedia('(dynamic-range: high)').matches ? 'Supported' : 'Standard');
+  set('f_platform', nav.platform || 'not exposed');
+
+  // Canvas fingerprint
+  const c = document.createElement('canvas');
+  c.width = 280; c.height = 60;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f00'; ctx.fillRect(0,0,10,10);
+  ctx.fillStyle = '#0f0'; ctx.fillRect(10,0,10,10);
+  ctx.fillStyle = '#00f'; ctx.fillRect(20,0,10,10);
+  ctx.fillStyle = '#ff0'; ctx.font = '18px serif'; ctx.fillText('Chwm fjørdbank glyphs 🎯', 2, 40);
+  ctx.strokeStyle = 'rgba(200,100,50,0.8)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(220, 30, 20, 0, Math.PI*2); ctx.stroke();
+  const canvasData = c.toDataURL();
+  const ch = simpleHash(canvasData);
+  set('f_canvas', `0x${ch.toString(16).padStart(8,'0').toUpperCase()}`);
+
+  // WebGL
+  const glc = document.createElement('canvas');
+  const gl = glc.getContext('webgl') || glc.getContext('experimental-webgl');
+  let gpuStr = 'not available';
+  if (gl) {
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    gpuStr = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    if (gpuStr && gpuStr.length > 48) gpuStr = gpuStr.substring(0, 48) + '…';
+  }
+  set('f_gpu', gpuStr);
+
+  // Audio
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) {
+      const ac = new AC();
+      const osc = ac.createOscillator();
+      const analyser = ac.createAnalyser();
+      const gain = ac.createGain();
+      gain.gain.value = 0;
+      osc.connect(analyser); analyser.connect(gain); gain.connect(ac.destination);
+      osc.start(0);
+      setTimeout(() => {
+        const buf = new Float32Array(analyser.frequencyBinCount);
+        analyser.getFloatFrequencyData(buf);
+        const ah = simpleHash(buf.slice(0,50).join(','));
+        set('f_audio', `0x${ah.toString(16).padStart(8,'0').toUpperCase()}`);
+        osc.stop(); ac.close().catch(()=>{});
+      }, 150);
+    } else { set('f_audio', 'not available'); }
+  } catch(e) { set('f_audio', 'blocked'); }
+
+  // Notification permission
+  if ('Notification' in window) {
+    set('f_notif', Notification.permission);
+  } else { set('f_notif', 'not supported'); }
+
+  // Battery
+  if (nav.getBattery) {
+    nav.getBattery().then(b => {
+      const pct = Math.round(b.level * 100);
+      document.getElementById('battVal').textContent = `${pct}% · ${b.charging ? 'charging' : 'on battery'}`;
+      document.getElementById('battBar').style.width = pct + '%';
+    }).catch(() => {
+      document.getElementById('battVal').textContent = 'not exposed';
+    });
+  } else {
+    document.getElementById('battVal').textContent = 'not exposed';
+  }
+
+  // Fingerprint hash
+  const allSigs = [ua, (nav.languages||[]).join(','), Intl.DateTimeFormat().resolvedOptions().timeZone,
+    `${scr.width}x${scr.height}`, String(nav.hardwareConcurrency), String(nav.maxTouchPoints),
+    String(window.devicePixelRatio), String(scr.colorDepth), canvasData.substring(0, 300), gpuStr
+  ].join('|||');
+  const fh = simpleHash(allSigs);
+  const hexFull = fh.toString(16).padStart(16,'0').toUpperCase();
+  document.getElementById('hashVal').textContent = hexFull.match(/.{4}/g).join(' – ');
+
+  // Score
+  const uniqueness = Math.min(97, 55 + (fh % 42));
+  setTimeout(() => {
+    document.getElementById('scoreNum').innerHTML = `${uniqueness}<span>%</span>`;
+    document.getElementById('scoreBar').style.width = uniqueness + '%';
+    document.getElementById('scoreDesc').textContent =
+      uniqueness > 85
+        ? 'Extremely identifiable. You are nearly unique among all internet users.'
+        : uniqueness > 70
+        ? 'Highly identifiable. Sites can track you across sessions, incognito mode, and VPNs.'
+        : 'Moderately identifiable. Combined with behavioral signals, you can be precisely tracked.';
+  }, 400);
+
+  // Sentence block
+  setTimeout(() => buildSentence(ua, nav, conn, gpuStr), 600);
+}
+
+function buildSentence(ua, nav, conn, gpu) {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const region = tz.split('/')[1]?.replace('_', ' ') || tz;
+  const browser = detectBrowser(ua);
+  const os = detectOS(ua);
+  const device = detectDevice(ua).toLowerCase();
+  const lang = (nav.languages || [nav.language])[0] || nav.language;
+  const langNames = {'en':'English','fr':'French','de':'German','es':'Spanish','zh':'Chinese','ar':'Arabic','pt':'Portuguese','ru':'Russian','ja':'Japanese','ko':'Korean','bn':'Bengali','hi':'Hindi'};
+  const langName = langNames[lang.split('-')[0]] || lang;
+  const cores = nav.hardwareConcurrency || '?';
+  const connType = conn ? (conn.effectiveType||'?').toUpperCase() : null;
+  const gpuShort = gpu !== 'not available' ? gpu.split(' ').slice(0,3).join(' ') : null;
+  const scheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const pointer = window.matchMedia('(pointer: fine)').matches ? 'a mouse' : 'touch';
+
+  const parts = [
+    `Your <span class="sentence-fill">${browser}</span> on <span class="sentence-fill">${os}</span> tells us you're on a <span class="sentence-fill">${device}</span>,`,
+    ` somewhere in <span class="sentence-fill">${region}</span>,`,
+    ` reading this in <span class="sentence-fill">${langName}</span>.`,
+    gpuShort ? ` Your GPU — <span class="sentence-fill">${gpuShort}</span> — renders a canvas pattern no one else renders quite like you.` : '',
+    ` You have <span class="sentence-fill">${cores} CPU cores</span>,`,
+    connType ? ` you're on <span class="sentence-fill">${connType}</span>,` : '',
+    ` you prefer <span class="sentence-fill">${scheme} mode</span>,`,
+    ` and you're using <span class="sentence-fill">${pointer}</span>.`,
+    ` No one asked. Your browser just said so.`
+  ].join('');
+
+  document.getElementById('sentenceBlock').innerHTML = parts;
+}
+
+// Gyroscope & accelerometer
+window.addEventListener('deviceorientation', function handler(e) {
+  if (e.alpha == null && e.beta == null && e.gamma == null) return;
+  const a = (e.alpha||0).toFixed(1), b = (e.beta||0).toFixed(1), g = (e.gamma||0).toFixed(1);
+  document.getElementById('gyroVal').textContent = `α ${a}° β ${b}° γ ${g}°`;
+  document.getElementById('gyroBar').style.width = Math.min(100, Math.abs(parseFloat(b)) / 90 * 100) + '%';
+  window.removeEventListener('deviceorientation', handler);
+  window.addEventListener('deviceorientation', function(e2) {
+    const a2=(e2.alpha||0).toFixed(1),b2=(e2.beta||0).toFixed(1),g2=(e2.gamma||0).toFixed(1);
+    document.getElementById('gyroVal').textContent = `α ${a2}° β ${b2}° γ ${g2}°`;
+    document.getElementById('gyroBar').style.width = Math.min(100, Math.abs(parseFloat(b2)) / 90 * 100) + '%';
+  });
+}, { once: true });
+
+window.addEventListener('devicemotion', function handler(e) {
+  if (!e.acceleration) return;
+  const x = (e.acceleration.x||0).toFixed(2), y = (e.acceleration.y||0).toFixed(2), z = (e.acceleration.z||0).toFixed(2);
+  document.getElementById('accelVal').textContent = `x ${x}  y ${y}  z ${z}`;
+  const mag = Math.sqrt(x*x + y*y + z*z);
+  document.getElementById('accelBar').style.width = Math.min(100, mag / 20 * 100) + '%';
+  window.removeEventListener('devicemotion', handler);
+  window.addEventListener('devicemotion', function(e2) {
+    if (!e2.acceleration) return;
+    const x2=(e2.acceleration.x||0).toFixed(2),y2=(e2.acceleration.y||0).toFixed(2),z2=(e2.acceleration.z||0).toFixed(2);
+    document.getElementById('accelVal').textContent = `x ${x2}  y ${y2}  z ${z2}`;
+    const mag2 = Math.sqrt(x2*x2+y2*y2+z2*z2);
+    document.getElementById('accelBar').style.width = Math.min(100, mag2/20*100) + '%';
+  });
+}, { once: true });
+
+// On desktop, gyro/accel not available
+setTimeout(() => {
+  if (document.getElementById('gyroVal').textContent === 'waiting...') {
+    document.getElementById('gyroVal').textContent = 'not available on desktop';
+  }
+  if (document.getElementById('accelVal').textContent === 'waiting...') {
+    document.getElementById('accelVal').textContent = 'not available on desktop';
+  }
+}, 3000);
+
+collect();
+</script>
+</body>
+</html>
